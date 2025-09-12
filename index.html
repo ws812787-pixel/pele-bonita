@@ -85,7 +85,32 @@ header{
 .hero p{margin:6px 0 0;color:#fff;opacity:.95;max-width:760px}
 
 /* BOTÕES */
-.cta{margin-top:12px;display:flex;gap:10px;flex-wrap:wrap}
+/* BOTÕES - ajuste para sempre lado a lado */
+.cta{
+  margin-top:12px;
+  display:flex;
+  gap:10px;
+  flex-wrap:nowrap;    /* não deixa quebrar a linha */
+  justify-content:center;
+}
+
+.cta .btn{
+  flex:1;              /* faz os botões se ajustarem igualmente */
+  text-align:center;
+}
+
+/* RESPONSIVO */
+@media (max-width:720px){
+  .hero{flex-direction:column;text-align:center}
+  .hero img{max-width:220px;margin-bottom:8px}
+  .hero h1{font-size:22px}
+  .produto img{height:250px}
+  
+  /* no mobile, mantém os botões lado a lado */
+  .cta{flex-direction:row;gap:8px}
+  .cta .btn{font-size:14px;padding:10px 14px}
+}
+
 .btn{
   display:inline-block;
   background:var(--brown);
@@ -351,6 +376,7 @@ footer a:hover{text-decoration:underline}
   </script>
 </body>
 </html>
+
 
 
 
