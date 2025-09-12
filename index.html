@@ -95,9 +95,13 @@ header{
 }
 
 .cta .btn{
-  flex:1;              /* faz os botões se ajustarem igualmente */
-  text-align:center;
+  flex:1;                    /* ocupa espaço igual */
+  text-align:center;          /* centraliza o texto horizontalmente */
+  display:flex;               /* ativa flexbox dentro do botão */
+  align-items:center;         /* centraliza o texto verticalmente */
+  justify-content:center;     /* centraliza na horizontal também */
 }
+
 
 /* RESPONSIVO */
 @media (max-width:720px){
@@ -376,6 +380,7 @@ footer a:hover{text-decoration:underline}
   </script>
 </body>
 </html>
+
 
 
 
