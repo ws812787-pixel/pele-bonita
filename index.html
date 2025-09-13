@@ -553,21 +553,10 @@ footer a:hover{text-decoration:underline}
       }
     ]
   }
-    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-<script>
-  fetch("http://ip-api.com/json/")
-    .then(res => res.json())
-    .then(data => {
-      let map = L.map("map").setView([data.lat, data.lon], 5);
-      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-        attribution: "© OpenStreetMap"
-      }).addTo(map);
-      L.marker([data.lat, data.lon]).addTo(map)
-        .bindPopup("Você está aqui: " + data.city);
-    });
 </script>
 </body>
 </html>
+
 
 
 
