@@ -165,6 +165,11 @@ h2{color:var(--brown);text-align:center;margin:0 0 14px;font-size:24px}
   grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
   margin-top: 18px;
 }
+  /* Mobile: 2 por linha */
+    @media (max-width: 720px) {
+      .beneficios {
+        grid-template-columns: repeat(2, 1fr);
+      }
 
 .card {
   background: #ffffff; /* Fundo branco */
@@ -612,6 +617,7 @@ footer a:hover{text-decoration:underline}
 </script>
 </body>
 </html>
+
 
 
 
