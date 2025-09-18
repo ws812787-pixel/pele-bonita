@@ -155,7 +155,26 @@ section{padding:44px 0}
 h2{color:var(--brown);text-align:center;margin:0 0 14px;font-size:24px}
 .lead{text-align:center;max-width:860px;margin:0 auto;color:#494949}
 
-/* BENEFÍCIOS */ .grid{display:grid;gap:18px} .beneficios{grid-template-columns:repeat(auto-fit,minmax(230px,1fr));margin-top:18px} .card{background:#fff;border-radius:14px;padding:18px;text-align:center; border:1px solid rgba(0,0,0,.05);box-shadow:0 6px 18px rgba(0,0,0,.05)} .card h3{margin:4px 0 6px;color:var(--brown);font-size:18px} .card p{margin:0;color:#606060}
+/* BENEFÍCIOS */
+.grid {
+  display: grid;
+  gap: 18px;
+}
+
+/* Desktop padrão */
+.beneficios {
+  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+  margin-top: 18px;
+}
+
+/* Mobile: 2 por linha */
+@media (max-width: 720px) {
+  .beneficios {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+
 /* PRODUTOS */
 .produtos{grid-template-columns:repeat(auto-fit,minmax(270px,1fr));margin-top:20px}
 .produto{
@@ -574,6 +593,7 @@ footer a:hover{text-decoration:underline}
 </script>
 </body>
 </html>
+
 
 
 
