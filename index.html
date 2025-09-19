@@ -619,48 +619,62 @@ footer a:hover{text-decoration:underline}
   }
 </script>
 
- <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.3/firebase-app.js";
-    import { getFirestore, collection, addDoc, onSnapshot, query, orderBy } from "https://www.gstatic.com/firebasejs/10.12.3/firebase-firestore.js";
+ <!-- Firebase SDK -->
+<script src="https://www.gstatic.com/firebasejs/10.12.3/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.3/firebase-firestore.js"></script>
 
 <script>
-  // Configuração Firebase
+  // Configuração do Firebase
   const firebaseConfig = {
     apiKey: "AIzaSyDtnX6JTYQBghRUanv25ebWoTY8NNTz1nY",
-      authDomain: "painel-92b60.firebaseapp.com",
-      projectId: "painel-92b60",
-      storageBucket: "painel-92b60.appspot.com",
-      messagingSenderId: "972708135504",
-      appId: "1:972708135504:web:d68a9ca19a56e636108755",
-      measurementId: "G-X56ZYWRRJE"
+    authDomain: "painel-92b60.firebaseapp.com",
+    projectId: "painel-92b60",
+    storageBucket: "painel-92b60.firebasestorage.app",
+    messagingSenderId: "972708135504",
+    appId: "1:972708135504:web:ec165386e2b2eca4108755"
   };
-  const app = initializeApp(firebaseConfig);
-    const db = getFirestore(app);
-  // Captura dados do visitante
+
+  // Inicializa Firebase
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.firestore();
+
+  // Função para coletar info do visitante
   async function registrarVisita() {
     try {
-      let res = await fetch("https://ipinfo.io/json?token=46153e14be0b1d");
-      let data = await res.json();
+      // IP + Localização via ipinfo.io
+      const ipResponse = await fetch("https://ipinfo.io/json?token=COLOQUE_SEU_TOKEN_IPINFO_AQUI");
+      const ipData = await ipResponse.json();
 
-      let device = /Mobi|Android/i.test(navigator.userAgent) ? "Mobile" : "Desktop";
+      // Dispositivo
+      const userAgent = navigator.userAgent;
+      let device = "Desktop";
+      if (/mobile/i.test(userAgent)) device = "Mobile";
+      if (/tablet/i.test(userAgent)) device = "Tablet";
 
-      await db.collection("visitas").add({
-        ip: data.ip || "desconhecido",
-        cidade: data.city || "indefinida",
-        regiao: data.region || "indefinida",
-        pais: data.country || "indefinido",
-        dispositivo: device,
-        horario: new Date().toISOString()
-      });
+      // Dados do visitante
+      const visita = {
+        city: ipData.city || "Desconhecida",
+        country: ipData.country || "Desconhecido",
+        ip: ipData.ip || "Oculto",
+        device: device,
+        userAgent: userAgent,
+        timestamp: new Date()
+      };
 
-    } catch (e) {
-      console.error("Erro ao registrar visita:", e);
+      // Salvar no Firestore
+      await db.collection("visits").add(visita);
+      console.log("✅ Visita registrada:", visita);
+    } catch (error) {
+      console.error("Erro ao registrar visita:", error);
     }
   }
+
+  // Registrar assim que a página carregar
   registrarVisita();
 </script>
 </body>
 </html>
+
 
 
 
