@@ -1,81 +1,96 @@
 <!doctype html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <meta charset="utf-8"/>
   <title>Painel de Visitantes — Pele Bonita</title>
   <style>
     body {
       font-family: Arial, sans-serif;
-      background: #f5f5f5;
+      background: #fafafa;
+      color: #333;
       margin: 0;
       padding: 20px;
     }
     h1 {
       text-align: center;
-      color: #7A4E2D;
+      color: #F47C20;
     }
     #visitors {
       max-width: 800px;
       margin: 20px auto;
-      background: #fff;
-      padding: 20px;
-      border-radius: 10px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
     }
     .visitor {
-      padding: 10px;
-      border-bottom: 1px solid #eee;
-    }
-    .visitor:last-child {
-      border-bottom: none;
+      background: #fff;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      padding: 12px 16px;
+      margin-bottom: 10px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.05);
     }
   </style>
 </head>
 <body>
-  <h1>Painel de Visitantes</h1>
-  <div id="visitors">Carregando visitantes...</div>
+  <h1>📊 Painel de Visitantes — Pele Bonita</h1>
+  <div id="visitors"></div>
 
-  <!-- Firebase SDK -->
-  <script src="https://www.gstatic.com/firebasejs/10.12.3/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.12.3/firebase-firestore.js"></script>
-
+  <!-- Firebase -->
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
   <script>
-    // Configuração do Firebase
+    // 🔧 CONFIGURAÇÃO DO FIREBASE
     const firebaseConfig = {
       apiKey: "AIzaSyDtnX6JTYQBghRUanv25ebWoTY8NNTz1nY",
       authDomain: "painel-92b60.firebaseapp.com",
+      databaseURL: "https://painel-92b60-default-rtdb.firebaseio.com",
       projectId: "painel-92b60",
       storageBucket: "painel-92b60.firebasestorage.app",
       messagingSenderId: "972708135504",
       appId: "1:972708135504:web:ec165386e2b2eca4108755"
     };
-
-    // Inicializar Firebase
     firebase.initializeApp(firebaseConfig);
-    const db = firebase.firestore();
+    const db = firebase.database();
 
-    // Referência do painel
-    const visitorsDiv = document.getElementById("visitors");
+    // Detectar dispositivo
+    function detectDevice() {
+      const ua = navigator.userAgent;
+      if (/mobile/i.test(ua)) return "Mobile";
+      if (/tablet/i.test(ua)) return "Tablet";
+      return "Desktop";
+    }
 
-    // Listener em tempo real
-    db.collection("visits").orderBy("timestamp", "desc").limit(20)
-      .onSnapshot(snapshot => {
-        visitorsDiv.innerHTML = "";
-        snapshot.forEach(doc => {
-          const v = doc.data();
-          const date = new Date(v.timestamp?.toDate ? v.timestamp.toDate() : v.timestamp);
-          visitorsDiv.innerHTML += `
-            <div class="visitor">
-              🕒 ${date.toLocaleString()} <br>
-              🌍 ${v.city || "Cidade desconhecida"}, ${v.country || "País desconhecido"} <br>
-              💻 ${v.device || "Dispositivo não identificado"}
-            </div>
-          `;
-        });
-      });
+    // Salvar visitante
+    async function saveVisitor() {
+      try {
+        // ⚠️ Substitua SEU_TOKEN pelo token do ipinfo.io
+        const res = await fetch("https://app.ipgeolocation.io/json?token=362e11dd0c9546b5925eb668c7caf377");
+        const data = await res.json();
+
+        const visitor = {
+          timestamp: Date.now(),
+          city: data.city || "Cidade não disponível",
+          region: data.region || "Região não disponível",
+          country: data.country || "País não disponível",
+          ip: data.ip || "IP não identificado",
+          device: detectDevice()
+        };
+
+        db.ref("visitors").push(visitor);
+      } catch (err) {
+        console.error("Erro ao capturar dados do visitante:", err);
+      }
+    }
+    saveVisitor();
+
+    // Exibir visitantes em tempo real
+    db.ref("visitors").limitToLast(20).on("child_added", snapshot => {
+      const v = snapshot.val();
+      const time = new Date(v.timestamp).toLocaleString("pt-BR");
+
+      const div = document.createElement("div");
+      div.className = "visitor";
+      div.textContent = `🕒 ${time} • 🌍 ${v.city}, ${v.region} - ${v.country} • 💻 ${v.device}`;
+      document.getElementById("visitors").prepend(div);
+    });
   </script>
 </body>
 </html>
-
-
