@@ -638,7 +638,7 @@ footer a:hover{text-decoration:underline}
   // Captura dados do visitante
   async function registrarVisita() {
     try {
-      let res = await fetch("https://ipinfo.io/json?token=SEU_TOKEN_IPINFO");
+      let res = await fetch("https://app.ipgeolocation.io/json?token=362e11dd0c9546b5925eb668c7caf377");
       let data = await res.json();
 
       let device = /Mobi|Android/i.test(navigator.userAgent) ? "Mobile" : "Desktop";
@@ -660,6 +660,7 @@ footer a:hover{text-decoration:underline}
 </script>
 </body>
 </html>
+
 
 
 
