@@ -647,7 +647,7 @@ footer a:hover{text-decoration:underline}
   // 🌍 Pega dados do visitante pela API ipinfo
   async function getVisitorData() {
     try {
-      const res = await fetch(`https://ipinfo.io/json?token=SEU_TOKEN_AQUI`);
+      const res = await fetch(`https://ipinfo.io/json?token=46153e14be0b1d`);
       const data = await res.json();
       return {
         cidade: data.city || "Desconhecida",
@@ -684,6 +684,7 @@ footer a:hover{text-decoration:underline}
 </script>
 </body>
 </html>
+
 
 
 
