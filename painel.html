@@ -62,7 +62,7 @@
     async function saveVisitor() {
       try {
         // ⚠️ Substitua SEU_TOKEN pelo token do ipinfo.io
-        const res = await fetch("https://ipinfo.io/json?token=46153e14be0b1d");
+        const res = await fetch("https://app.ipgeolocation.io/json?token=362e11dd0c9546b5925eb668c7caf377");
         const data = await res.json();
 
         const visitor = {
@@ -94,5 +94,6 @@
   </script>
 </body>
 </html>
+
 
 
