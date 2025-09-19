@@ -1,60 +1,43 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="utf-8"/>
   <title>Painel de Visitantes — Pele Bonita</title>
   <style>
     body {
       font-family: Arial, sans-serif;
-      background: #FFF4E6;
+      background: #fafafa;
+      color: #333;
       margin: 0;
       padding: 20px;
-      color: #333;
     }
     h1 {
       text-align: center;
       color: #F47C20;
     }
-    ul {
-      list-style: none;
-      padding: 0;
+    #visitors {
       max-width: 800px;
       margin: 20px auto;
     }
-    li {
+    .visitor {
       background: #fff;
-      margin: 10px 0;
-      padding: 15px;
-      border-radius: 10px;
-      box-shadow: 0 3px 6px rgba(0,0,0,0.08);
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      font-size: 15px;
-    }
-    .info {
-      display: flex;
-      flex-direction: column;
-    }
-    .time {
-      font-weight: bold;
-      color: #7A4E2D;
-    }
-    .meta {
-      font-size: 13px;
-      color: #555;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      padding: 12px 16px;
+      margin-bottom: 10px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.05);
     }
   </style>
 </head>
 <body>
-  <h1>📊 Painel de Visitantes</h1>
-  <ul id="visitorList"></ul>
+  <h1>📊 Painel de Visitantes — Pele Bonita</h1>
+  <div id="visitors"></div>
 
   <!-- Firebase -->
   <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
   <script>
-    // Configuração Firebase (use a mesma do seu projeto)
+    // 🔧 CONFIGURAÇÃO DO FIREBASE
     const firebaseConfig = {
       apiKey: "AIzaSyDtnX6JTYQBghRUanv25ebWoTY8NNTz1nY",
       authDomain: "painel-92b60.firebaseapp.com",
@@ -65,51 +48,51 @@
       appId: "1:972708135504:web:ec165386e2b2eca4108755"
     };
     firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
 
-    // Detecta dispositivo
+    // Detectar dispositivo
     function detectDevice() {
       const ua = navigator.userAgent;
-      if (/mobile/i.test(ua)) return "📱 Mobile";
-      if (/tablet/i.test(ua)) return "📲 Tablet";
-      return "💻 Desktop";
+      if (/mobile/i.test(ua)) return "Mobile";
+      if (/tablet/i.test(ua)) return "Tablet";
+      return "Desktop";
     }
 
-    // Captura dados do visitante
+    // Salvar visitante
     async function saveVisitor() {
       try {
-        const res = await fetch("https://ipapi.co/json/");
+        // ⚠️ Substitua SEU_TOKEN pelo token do ipinfo.io
+        const res = await fetch("https://ipinfo.io/json?token=46153e14be0b1d");
         const data = await res.json();
 
-        firebase.database().ref("visitors").push({
+        const visitor = {
           timestamp: Date.now(),
-          city: data.city,
-          region: data.region,
-          country: data.country_name,
+          city: data.city || "Cidade não disponível",
+          region: data.region || "Região não disponível",
+          country: data.country || "País não disponível",
+          ip: data.ip || "IP não identificado",
           device: detectDevice()
-        });
+        };
+
+        db.ref("visitors").push(visitor);
       } catch (err) {
-        console.error("Erro ao capturar geolocalização", err);
+        console.error("Erro ao capturar dados do visitante:", err);
       }
     }
-
-    // Chama ao abrir página
     saveVisitor();
 
-    // Renderiza lista no painel
-    const visitorList = document.getElementById("visitorList");
-    firebase.database().ref("visitors").limitToLast(20).on("child_added", snapshot => {
-      const data = snapshot.val();
-      const li = document.createElement("li");
-      li.innerHTML = `
-        <div class="info">
-          <span class="time">🕒 ${new Date(data.timestamp).toLocaleString()}</span>
-          <span class="meta">🌍 ${data.city}, ${data.region} - ${data.country}</span>
-        </div>
-        <div>${data.device}</div>
-      `;
-      visitorList.prepend(li);
+    // Exibir visitantes em tempo real
+    db.ref("visitors").limitToLast(20).on("child_added", snapshot => {
+      const v = snapshot.val();
+      const time = new Date(v.timestamp).toLocaleString("pt-BR");
+
+      const div = document.createElement("div");
+      div.className = "visitor";
+      div.textContent = `🕒 ${time} • 🌍 ${v.city}, ${v.region} - ${v.country} • 💻 ${v.device}`;
+      document.getElementById("visitors").prepend(div);
     });
   </script>
 </body>
 </html>
+
 
