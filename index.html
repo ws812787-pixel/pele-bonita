@@ -619,8 +619,10 @@ footer a:hover{text-decoration:underline}
   }
 </script>
 
-  <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js"></script>
+ <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.3/firebase-app.js";
+    import { getFirestore, collection, addDoc, onSnapshot, query, orderBy } from "https://www.gstatic.com/firebasejs/10.12.3/firebase-firestore.js";
+
 <script>
   // Configuração Firebase
   const firebaseConfig = {
@@ -659,6 +661,7 @@ footer a:hover{text-decoration:underline}
 </script>
 </body>
 </html>
+
 
 
 
