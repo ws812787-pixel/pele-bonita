@@ -650,7 +650,7 @@ footer a:hover{text-decoration:underline}
       if (/tablet/i.test(userAgent)) device = "Tablet";
 
       // Dados
-      const visitas = {
+      const visita = {
         timestamp: new Date().toISOString(),
         city: data.city || "Desconhecida",
         region: data.region || "Desconhecida",
@@ -660,7 +660,7 @@ footer a:hover{text-decoration:underline}
       };
 
       // Salvar no Realtime Database
-      await db.ref("visitas").push(visita);
+      await db.ref("visita").push(visita);
       console.log("✅ Visita registrada:", visita);
     } catch (err) {
       console.error("Erro ao registrar visita:", err);
@@ -673,6 +673,7 @@ footer a:hover{text-decoration:underline}
 </script>
 </body>
 </html>
+
 
 
 
