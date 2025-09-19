@@ -4,40 +4,31 @@
   <meta charset="utf-8"/>
   <title>Painel de Visitantes — Pele Bonita</title>
   <style>
-    body {
-      font-family: Arial, sans-serif;
-      background: #fafafa;
-      color: #333;
-      margin: 0;
-      padding: 20px;
-    }
-    h1 {
-      text-align: center;
-      color: #F47C20;
-    }
-    #visitors {
-      max-width: 800px;
-      margin: 20px auto;
-    }
-    .visitor {
-      background: #fff;
-      border: 1px solid #ddd;
-      border-radius: 8px;
-      padding: 12px 16px;
-      margin-bottom: 10px;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.05);
-    }
+    body{font-family:Arial,sans-serif;background:#fafafa;margin:0;padding:20px}
+    h1{text-align:center;color:#F47C20}
+    table{width:100%;border-collapse:collapse;margin-top:20px;background:#fff}
+    th,td{padding:10px;border-bottom:1px solid #ddd;text-align:left}
+    th{background:#F47C20;color:#fff}
+    tr:hover{background:#f5f5f5}
   </style>
 </head>
 <body>
-  <h1>📊 Painel de Visitantes — Pele Bonita</h1>
-  <div id="visitors"></div>
+  <h1>📊 Painel de Visitantes</h1>
+  <table>
+    <thead>
+      <tr>
+        <th>🕒 Data/Hora</th>
+        <th>🌍 Local</th>
+        <th>💻 Dispositivo</th>
+        <th>🌐 IP</th>
+      </tr>
+    </thead>
+    <tbody id="lista"></tbody>
+  </table>
 
-  <!-- Firebase -->
-  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js"></script>
   <script>
-    // 🔧 CONFIGURAÇÃO DO FIREBASE
     const firebaseConfig = {
       apiKey: "AIzaSyDtnX6JTYQBghRUanv25ebWoTY8NNTz1nY",
       authDomain: "painel-92b60.firebaseapp.com",
@@ -47,58 +38,28 @@
       messagingSenderId: "972708135504",
       appId: "1:972708135504:web:ec165386e2b2eca4108755"
     };
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.database();
+    const app = firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
 
-    // Detectar dispositivo
-    function detectDevice() {
-      const ua = navigator.userAgent;
-      if (/mobile/i.test(ua)) return "Mobile";
-      if (/tablet/i.test(ua)) return "Tablet";
-      return "Desktop";
-    }
+    const lista = document.getElementById("lista");
 
-    // Salvar visitante
-    async function saveVisitor() {
-      try {
-        // ⚠️ Substitua SEU_TOKEN pelo token do ipinfo.io
-        const res = await fetch("https://app.ipgeolocation.io/json?token=362e11dd0c9546b5925eb668c7caf377");
-        const data = await res.json();
-
-        const visitor = {
-          timestamp: Date.now(),
-          city: data.city || "Cidade não disponível",
-          region: data.region || "Região não disponível",
-          country: data.country || "País não disponível",
-          ip: data.ip || "IP não identificado",
-          device: detectDevice()
-        };
-
-        db.ref("visitors").push(visitor);
-      } catch (err) {
-        console.error("Erro ao capturar dados do visitante:", err);
-      }
-    }
-    // Só registra se NÃO estiver no painel
-if (!window.location.pathname.includes("painel.html")) {
-  saveVisitor();
-}
-
-
-    // Exibir visitantes em tempo real
-    db.ref("visitors").limitToLast(20).on("child_added", snapshot => {
-      const v = snapshot.val();
-      const time = new Date(v.timestamp).toLocaleString("pt-BR");
-
-      const div = document.createElement("div");
-      div.className = "visitor";
-      div.textContent = `🕒 ${time} • 🌍 ${v.city}, ${v.region} - ${v.country} • 💻 ${v.device}`;
-      document.getElementById("visitors").prepend(div);
-    });
+    db.collection("visitas").orderBy("horario","desc").limit(50)
+      .onSnapshot(snapshot=>{
+        lista.innerHTML="";
+        snapshot.forEach(doc=>{
+          let v=doc.data();
+          let tr=document.createElement("tr");
+          tr.innerHTML=`
+            <td>${new Date(v.horario).toLocaleString()}</td>
+            <td>${v.cidade}, ${v.regiao} - ${v.pais}</td>
+            <td>${v.dispositivo}</td>
+            <td>${v.ip}</td>`;
+          lista.appendChild(tr);
+        });
+      });
   </script>
 </body>
 </html>
-
 
 
 
