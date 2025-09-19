@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <title>Painel de Visitantes — Pele Bonita</title>
+  <style>
+    body { font-family: Arial, sans-serif; background:#fafafa; color:#333; padding:20px }
+    h1 { color:#F47C20 }
+    ul { list-style:none; padding:0 }
+    li { background:#fff; margin:10px 0; padding:10px; border-radius:8px;
+         box-shadow:0 2px 6px rgba(0,0,0,.1) }
+  </style>
+</head>
+<body>
+  <h1>👀 Visitantes em tempo real</h1>
+  <ul id="lista"></ul>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+    import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyDtnX6JTYQBghRUanv25ebWoTY8NNTz1nY",
+      authDomain: "painel-92b60.firebaseapp.com",
+      databaseURL: "https://painel-92b60-default-rtdb.firebaseio.com",
+      projectId: "painel-92b60",
+      storageBucket: "painel-92b60.firebasestorage.app",
+      messagingSenderId: "972708135504",
+      appId: "1:972708135504:web:ec165386e2b2eca4108755"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+
+    const visitRef = ref(db, 'visitors');
+    onValue(visitRef, (snapshot) => {
+      const data = snapshot.val();
+      const lista = document.getElementById("lista");
+      lista.innerHTML = "";
+      if (data) {
+        Object.values(data).reverse().forEach(v => {
+          const item = document.createElement("li");
+          item.textContent = `${v.language} — ${v.userAgent} (${new Date(v.timestamp).toLocaleString()})`;
+          lista.appendChild(item);
+        });
+      }
+    });
+  </script>
+</body>
+</html>
