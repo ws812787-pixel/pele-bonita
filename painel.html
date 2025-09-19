@@ -1,20 +1,45 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="utf-8"/>
+  <meta charset="UTF-8">
   <title>Painel de Visitantes — Pele Bonita</title>
   <style>
-    body{font-family:Arial,sans-serif;background:#fafafa;margin:0;padding:20px}
-    h1{text-align:center;color:#F47C20}
-    table{width:100%;border-collapse:collapse;margin-top:20px;background:#fff}
-    th,td{padding:10px;border-bottom:1px solid #ddd;text-align:left}
-    th{background:#F47C20;color:#fff}
-    tr:hover{background:#f5f5f5}
+    body {
+      font-family: Arial, sans-serif;
+      background: #fafafa;
+      margin: 0;
+      padding: 20px;
+    }
+    h1 {
+      text-align: center;
+      color: #F47C20;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+      background: #fff;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+      border-radius: 8px;
+      overflow: hidden;
+    }
+    th, td {
+      padding: 10px;
+      border-bottom: 1px solid #ddd;
+      text-align: left;
+    }
+    th {
+      background: #F47C20;
+      color: #fff;
+    }
+    tr:hover {
+      background: #f5f5f5;
+    }
   </style>
 </head>
 <body>
   <h1>👥 Visitantes em tempo real</h1>
-  <div id="visits"></div>
+
   <table>
     <thead>
       <tr>
@@ -26,26 +51,27 @@
     </thead>
     <tbody id="lista"></tbody>
   </table>
-  <!-- Firebase SDKs -->
-  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 
-  <script>
-    // 🔧 Configuração corrigida
+  <!-- Firebase SDK -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.3/firebase-app.js";
+    import { getDatabase, ref, push, onValue, query, limitToLast } from "https://www.gstatic.com/firebasejs/10.12.3/firebase-database.js";
+
+    // 🔧 Configuração do Firebase
     const firebaseConfig = {
       apiKey: "AIzaSyDtnX6JTYQBghRUanv25ebWoTY8NNTz1nY",
       authDomain: "painel-92b60.firebaseapp.com",
       databaseURL: "https://painel-92b60-default-rtdb.firebaseio.com",
       projectId: "painel-92b60",
-      storageBucket: "painel-92b60.firebasestorage.app",
+      storageBucket: "painel-92b60.appspot.com",
       messagingSenderId: "972708135504",
-      appId: "1:972708135504:web:ec165386e2b2eca4108755"
+      appId: "1:972708135504:web:d68a9ca19a56e636108755",
+      measurementId: "G-X56ZYWRRJE"
     };
-   
 
     // 🔥 Inicializa Firebase
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.database();
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
 
     // 📌 Detecta dispositivo
     function getDeviceInfo() {
@@ -67,19 +93,18 @@
           ip: data.ip || "N/A"
         };
       } catch (e) {
-        console.error("Erro ao buscar IP:", e);
         return { cidade: "Indefinida", regiao: "Indefinida", pais: "Indefinido", ip: "N/A" };
       }
     }
 
-    // ⏱️ Registra visita (evita registrar no painel)
+    // ⏱️ Registra visita (apenas quando não for o painel)
     async function registrarVisita() {
       if (window.location.pathname.includes("painel.html")) return;
 
       const local = await getVisitorData();
       const device = getDeviceInfo();
 
-      db.ref("visitas").push({
+      push(ref(db, "visitas"), {
         horario: new Date().toISOString(),
         ...local,
         dispositivo: device
@@ -89,26 +114,25 @@
     registrarVisita();
 
     // 🔎 Renderiza visitas em tempo real
-    db.ref("visitas").limitToLast(50).on("child_added", (snapshot) => {
-      const v = snapshot.val();
-      const visitasDiv = document.getElementById("visitas");
-      const dataHora = new Date(v.horario).toLocaleString("pt-BR");
+    const visitasRef = query(ref(db, "visitas"), limitToLast(50)); // últimos 50 visitantes
+    onValue(visitasRef, (snapshot) => {
+      const tbody = document.getElementById("lista");
+      tbody.innerHTML = "";
+      const data = snapshot.val();
+      if (!data) return;
 
-      const visitaEl = document.createElement("div");
-      visitaEl.className = "visita";
-      visitaEl.innerHTML = `
-        🕒 <strong>${dataHora}</strong><br>
-        🌍 ${v.cidade}, ${v.regiao} - ${v.pais}<br>
-        💻 ${v.dispositivo}<br>
-        🔗 IP: ${v.ip}
-      `;
-
-      visitasDiv.prepend(visitaEl);
+      const visitas = Object.values(data).reverse(); // mais recentes primeiro
+      visitas.forEach((v) => {
+        const dataHora = new Date(v.horario).toLocaleString("pt-BR");
+        tbody.innerHTML += `
+          <tr>
+            <td>🕒 ${dataHora}</td>
+            <td>🌍 ${v.cidade}, ${v.regiao} - ${v.pais}</td>
+            <td>💻 ${v.dispositivo}</td>
+            <td>🌐 ${v.ip}</td>
+          </tr>`;
+      });
     });
   </script>
 </body>
 </html>
-
-
-
-
