@@ -6,45 +6,40 @@
   <style>
     body {
       font-family: Arial, sans-serif;
-      background: #fafafa;
-      margin: 0;
-      padding: 20px;
-      color: #333;
+      background:#fafafa;
+      margin:0; padding:20px;
     }
-    h1 {
-      text-align: center;
-      color: #F47C20;
+    h1, h2 {
+      text-align:center;
+      color:#F47C20;
+      margin:10px 0;
     }
     table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 20px;
-      background: #fff;
-      border-radius: 8px;
-      overflow: hidden;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+      width:100%;
+      border-collapse:collapse;
+      margin-top:20px;
+      background:#fff;
+      border-radius:8px;
+      overflow:hidden;
+      box-shadow:0 4px 12px rgba(0,0,0,0.08);
     }
     th, td {
-      padding: 12px;
-      border-bottom: 1px solid #ddd;
-      text-align: left;
+      padding:12px;
+      border-bottom:1px solid #ddd;
+      text-align:left;
     }
     th {
-      background: #F47C20;
-      color: #fff;
-      text-transform: uppercase;
-      font-size: 14px;
+      background:#F47C20;
+      color:#fff;
     }
     tr:hover {
-      background: #f5f5f5;
-    }
-    td {
-      font-size: 14px;
+      background:#f5f5f5;
     }
   </style>
 </head>
 <body>
-  <h1>👥 Visitantes em tempo real</h1>
+  <h1>👥 Painel de Visitantes</h1>
+  <h2 id="onlineCount">Usuários online agora: 0</h2>
 
   <table>
     <thead>
@@ -55,17 +50,13 @@
         <th>🌐 IP</th>
       </tr>
     </thead>
-    <tbody id="lista">
-      <tr><td colspan="4">Carregando visitas...</td></tr>
-    </tbody>
+    <tbody id="lista"></tbody>
   </table>
 
-  <!-- Firebase SDKs -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.3/firebase-app.js";
     import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/10.12.3/firebase-database.js";
 
-    // 🔧 Configuração do Firebase
     const firebaseConfig = {
       apiKey: "AIzaSyDtnX6JTYQBghRUanv25ebWoTY8NNTz1nY",
       authDomain: "painel-92b60.firebaseapp.com",
@@ -73,45 +64,42 @@
       projectId: "painel-92b60",
       storageBucket: "painel-92b60.appspot.com",
       messagingSenderId: "972708135504",
-      appId: "1:972708135504:web:d68a9ca19a56e636108755",
-      measurementId: "G-X56ZYWRRJE"
+      appId: "1:972708135504:web:d68a9ca19a56e636108755"
     };
 
-    // 🔥 Inicializa Firebase
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
 
-    // 🔎 Lê visitas em tempo real
+    // 🔥 Referências do Firebase
+    const onlineRef = ref(db, "onlineUsers");
     const visitasRef = ref(db, "visitas");
 
+    // 📊 Contador de usuários online
+    onValue(onlineRef, (snapshot) => {
+      const total = snapshot.exists() ? Object.keys(snapshot.val()).length : 0;
+      document.getElementById("onlineCount").innerText =
+        `👥 Usuários online agora: ${total}`;
+    });
+
+    // 📋 Lista de visitas
     onValue(visitasRef, (snapshot) => {
-      const tbody = document.getElementById("lista");
-      tbody.innerHTML = "";
-
-      if (!snapshot.exists()) {
-        tbody.innerHTML = "<tr><td colspan='4'>Nenhuma visita registrada ainda</td></tr>";
-        return;
+      const lista = document.getElementById("lista");
+      lista.innerHTML = "";
+      if (snapshot.exists()) {
+        const visitas = Object.values(snapshot.val()).reverse();
+        visitas.forEach(v => {
+          const dataHora = new Date(v.horario).toLocaleString("pt-BR");
+          lista.innerHTML += `
+            <tr>
+              <td>${dataHora}</td>
+              <td>${v.cidade}, ${v.regiao} - ${v.pais}</td>
+              <td>${v.dispositivo}</td>
+              <td>${v.ip}</td>
+            </tr>
+          `;
+        });
       }
-
-      const visitas = [];
-      snapshot.forEach((child) => {
-        visitas.push(child.val());
-      });
-
-      // Mostra as visitas mais recentes primeiro
-      visitas.reverse().forEach((v) => {
-        const dataHora = v.horario ? new Date(v.horario).toLocaleString("pt-BR") : "Sem data";
-        tbody.innerHTML += `
-          <tr>
-            <td>🕒 ${dataHora}</td>
-            <td>🌍 ${v.cidade || "Indefinida"}, ${v.regiao || ""} - ${v.pais || ""}</td>
-            <td> ${v.dispositivo || "N/A"}</td>
-            <td>🌐 ${v.ip || "N/A"}</td>
-          </tr>
-        `;
-      });
     });
   </script>
 </body>
 </html>
-
