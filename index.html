@@ -621,9 +621,8 @@ footer a:hover{text-decoration:underline}
 
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.3/firebase-app.js";
-  import { getDatabase, ref, set, remove } from "https://www.gstatic.com/firebasejs/10.12.3/firebase-database.js";
+  import { getDatabase, ref, set, push, onDisconnect } from "https://www.gstatic.com/firebasejs/10.12.3/firebase-database.js";
 
-  // Configuração Firebase
   const firebaseConfig = {
     apiKey: "AIzaSyDtnX6JTYQBghRUanv25ebWoTY8NNTz1nY",
     authDomain: "painel-92b60.firebaseapp.com",
@@ -637,18 +636,7 @@ footer a:hover{text-decoration:underline}
   const app = initializeApp(firebaseConfig);
   const db = getDatabase(app);
 
-  // 🔥 Gera um ID único para cada visitante
-  const userId = `user_${Math.random().toString(36).substr(2, 9)}`;
-
-  // Detecta dispositivo
-  function getDeviceInfo() {
-    const ua = navigator.userAgent;
-    if (/mobile/i.test(ua)) return "📱 Mobile";
-    if (/tablet/i.test(ua)) return "📲 Tablet";
-    return "💻 Desktop";
-  }
-
-  // Pega IP e localização via ipinfo.io
+  // 📍 Captura IP + localização (ipinfo.io)
   async function getVisitorData() {
     try {
       const response = await fetch(`https://ipinfo.io/json?token=46153e14be0b1d`);
@@ -664,36 +652,53 @@ footer a:hover{text-decoration:underline}
     }
   }
 
-  // Registra usuário online
-  async function registrarUsuario() {
-    const local = await getVisitorData();
-    const device = getDeviceInfo();
+  // 📱 Detecta dispositivo
+  function getDeviceInfo() {
+    const ua = navigator.userAgent;
+    if (/mobile/i.test(ua)) return "📱 Mobile";
+    if (/tablet/i.test(ua)) return "📲 Tablet";
+    return "💻 Desktop";
+  }
 
-    const userRef = ref(db, `onlineUsers/${userId}`);
-    set(userRef, {
-      lastActive: Date.now(),
-      ...local,
-      dispositivo: device
+  // 🔥 Registra visita e presença online
+  async function registrarVisita() {
+    const visitante = await getVisitorData();
+    const dispositivo = getDeviceInfo();
+    const horario = new Date().toISOString();
+
+    // 👉 Salva no histórico de visitas
+    const visitasRef = ref(db, "visitas");
+    push(visitasRef, { ...visitante, dispositivo, horario });
+
+    // 👉 Mantém usuário em "onlineUsers"
+    const uid = Math.random().toString(36).substring(2);
+    const onlineRef = ref(db, "onlineUsers/" + uid);
+
+    // salva online
+    set(onlineRef, {
+      ...visitante,
+      dispositivo,
+      lastActive: Date.now()
     });
 
-    // Atualiza lastActive a cada 30 segundos
+    // remove quando sair
+    onDisconnect(onlineRef).remove();
+
+    // heartbeat a cada 30s
     setInterval(() => {
-      set(userRef, {
-        lastActive: Date.now(),
-        ...local,
-        dispositivo: device
+      set(onlineRef, {
+        ...visitante,
+        dispositivo,
+        lastActive: Date.now()
       });
     }, 30000);
-
-    // Remove usuário ao sair da página
-    window.addEventListener("beforeunload", () => {
-      remove(userRef);
-    });
   }
-  registrarUsuario();
+
+  registrarVisita();
 </script>
 </body>
 </html>
+
 
 
 
