@@ -70,6 +70,17 @@
   const app = initializeApp(firebaseConfig);
   const db = getDatabase(app);
 
+    // 🔥 Referências do Firebase
+    const onlineRef = ref(db, "onlineUsers");
+    const visitasRef = ref(db, "visitas");
+
+    // 📊 Contador de usuários online
+    onValue(onlineRef, (snapshot) => {
+      const total = snapshot.exists() ? Object.keys(snapshot.val()).length : 0;
+      document.getElementById("onlineCount").innerText =
+        `👥 Usuários online agora: ${total}`;
+    });
+    
   const lista = document.getElementById("lista");
 
   // 🔎 Pega somente as últimas 30 visitas
@@ -94,4 +105,5 @@
 </script>
 </body>
 </html>
+
 
