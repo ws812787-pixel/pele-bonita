@@ -1,24 +1,60 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="utf-8">
+  <meta charset="UTF-8">
   <title>Painel de Visitantes — Pele Bonita</title>
   <style>
-    body { font-family: Arial, sans-serif; background:#fafafa; color:#333; padding:20px }
-    h1 { color:#F47C20 }
-    ul { list-style:none; padding:0 }
-    li { background:#fff; margin:10px 0; padding:10px; border-radius:8px;
-         box-shadow:0 2px 6px rgba(0,0,0,.1) }
+    body {
+      font-family: Arial, sans-serif;
+      background: #FFF4E6;
+      margin: 0;
+      padding: 20px;
+      color: #333;
+    }
+    h1 {
+      text-align: center;
+      color: #F47C20;
+    }
+    ul {
+      list-style: none;
+      padding: 0;
+      max-width: 800px;
+      margin: 20px auto;
+    }
+    li {
+      background: #fff;
+      margin: 10px 0;
+      padding: 15px;
+      border-radius: 10px;
+      box-shadow: 0 3px 6px rgba(0,0,0,0.08);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 15px;
+    }
+    .info {
+      display: flex;
+      flex-direction: column;
+    }
+    .time {
+      font-weight: bold;
+      color: #7A4E2D;
+    }
+    .meta {
+      font-size: 13px;
+      color: #555;
+    }
   </style>
 </head>
 <body>
-  <h1>👀 Visitantes em tempo real</h1>
-  <ul id="lista"></ul>
+  <h1>📊 Painel de Visitantes</h1>
+  <ul id="visitorList"></ul>
 
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-    import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
-
+  <!-- Firebase -->
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+  <script>
+    // Configuração Firebase (use a mesma do seu projeto)
     const firebaseConfig = {
       apiKey: "AIzaSyDtnX6JTYQBghRUanv25ebWoTY8NNTz1nY",
       authDomain: "painel-92b60.firebaseapp.com",
@@ -28,23 +64,52 @@
       messagingSenderId: "972708135504",
       appId: "1:972708135504:web:ec165386e2b2eca4108755"
     };
+    firebase.initializeApp(firebaseConfig);
 
-    const app = initializeApp(firebaseConfig);
-    const db = getDatabase(app);
+    // Detecta dispositivo
+    function detectDevice() {
+      const ua = navigator.userAgent;
+      if (/mobile/i.test(ua)) return "📱 Mobile";
+      if (/tablet/i.test(ua)) return "📲 Tablet";
+      return "💻 Desktop";
+    }
 
-    const visitRef = ref(db, 'visitors');
-    onValue(visitRef, (snapshot) => {
-      const data = snapshot.val();
-      const lista = document.getElementById("lista");
-      lista.innerHTML = "";
-      if (data) {
-        Object.values(data).reverse().forEach(v => {
-          const item = document.createElement("li");
-          item.textContent = `${v.language} — ${v.userAgent} (${new Date(v.timestamp).toLocaleString()})`;
-          lista.appendChild(item);
+    // Captura dados do visitante
+    async function saveVisitor() {
+      try {
+        const res = await fetch("https://ipapi.co/json/");
+        const data = await res.json();
+
+        firebase.database().ref("visitors").push({
+          timestamp: Date.now(),
+          city: data.city,
+          region: data.region,
+          country: data.country_name,
+          device: detectDevice()
         });
+      } catch (err) {
+        console.error("Erro ao capturar geolocalização", err);
       }
+    }
+
+    // Chama ao abrir página
+    saveVisitor();
+
+    // Renderiza lista no painel
+    const visitorList = document.getElementById("visitorList");
+    firebase.database().ref("visitors").limitToLast(20).on("child_added", snapshot => {
+      const data = snapshot.val();
+      const li = document.createElement("li");
+      li.innerHTML = `
+        <div class="info">
+          <span class="time">🕒 ${new Date(data.timestamp).toLocaleString()}</span>
+          <span class="meta">🌍 ${data.city}, ${data.region} - ${data.country}</span>
+        </div>
+        <div>${data.device}</div>
+      `;
+      visitorList.prepend(li);
     });
   </script>
 </body>
 </html>
+
