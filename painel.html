@@ -53,56 +53,66 @@
     <tbody id="lista"></tbody>
   </table>
 
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.3/firebase-app.js";
-    import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/10.12.3/firebase-database.js";
+ <script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.3/firebase-app.js";
+  import { getDatabase, ref, onValue, query, limitToLast } from "https://www.gstatic.com/firebasejs/10.12.3/firebase-database.js";
 
-    const firebaseConfig = {
-      apiKey: "AIzaSyDtnX6JTYQBghRUanv25ebWoTY8NNTz1nY",
-      authDomain: "painel-92b60.firebaseapp.com",
-      databaseURL: "https://painel-92b60-default-rtdb.firebaseio.com",
-      projectId: "painel-92b60",
-      storageBucket: "painel-92b60.appspot.com",
-      messagingSenderId: "972708135504",
-      appId: "1:972708135504:web:d68a9ca19a56e636108755"
-    };
+  const firebaseConfig = {
+    apiKey: "AIzaSyDtnX6JTYQBghRUanv25ebWoTY8NNTz1nY",
+    authDomain: "painel-92b60.firebaseapp.com",
+    databaseURL: "https://painel-92b60-default-rtdb.firebaseio.com",
+    projectId: "painel-92b60",
+    storageBucket: "painel-92b60.appspot.com",
+    messagingSenderId: "972708135504",
+    appId: "1:972708135504:web:d68a9ca19a56e636108755"
+  };
 
-    const app = initializeApp(firebaseConfig);
-    const db = getDatabase(app);
+  const app = initializeApp(firebaseConfig);
+  const db = getDatabase(app);
 
-    // 🔥 Referências do Firebase
-    const onlineRef = ref(db, "onlineUsers");
-    const visitasRef = ref(db, "visitas");
+  // 🔥 Referências
+  const onlineRef = ref(db, "onlineUsers");
+  const visitasRef = ref(db, "visitas");
 
-    // 📊 Contador de usuários online
-    onValue(onlineRef, (snapshot) => {
-      const total = snapshot.exists() ? Object.keys(snapshot.val()).length : 0;
-      document.getElementById("onlineCount").innerText =
-        `👥 Usuários online agora: ${total}`;
-    });
+  // 📊 Contador de usuários online
+  onValue(onlineRef, (snapshot) => {
+    let total = 0;
+    const now = Date.now();
+    if (snapshot.exists()) {
+      const users = snapshot.val();
+      Object.values(users).forEach(u => {
+        // mantém só quem tem menos de 3 minutos de inatividade
+        if (now - u.lastActive < 3 * 60 * 1000) total++;
+      });
+    }
+    document.getElementById("onlineCount").innerText =
+      `👥 Usuários online agora: ${total}`;
+  });
 
-    // 📋 Lista de visitas
-    onValue(visitasRef, (snapshot) => {
-      const lista = document.getElementById("lista");
-      lista.innerHTML = "";
-      if (snapshot.exists()) {
-        const visitas = Object.values(snapshot.val()).reverse();
-        visitas.forEach(v => {
-          const dataHora = new Date(v.horario).toLocaleString("pt-BR");
-          lista.innerHTML += `
-            <tr>
-              <td>${dataHora}</td>
-              <td>${v.cidade}, ${v.regiao} - ${v.pais}</td>
-              <td>${v.dispositivo}</td>
-              <td>${v.ip}</td>
-            </tr>
-          `;
-        });
-      }
-    });
-  </script>
+  // 📋 Últimas 30 visitas
+  const visitasQuery = query(visitasRef, limitToLast(30));
+  onValue(visitasQuery, (snapshot) => {
+    const lista = document.getElementById("lista");
+    lista.innerHTML = "";
+    if (snapshot.exists()) {
+      const visitas = Object.values(snapshot.val()).reverse();
+      visitas.forEach(v => {
+        const dataHora = new Date(v.horario).toLocaleString("pt-BR");
+        lista.innerHTML += `
+          <tr>
+            <td>🕒 ${dataHora}</td>
+            <td>🌍 ${v.cidade}, ${v.regiao} - ${v.pais}</td>
+            <td>💻 ${v.dispositivo}</td>
+            <td>🌐 ${v.ip}</td>
+          </tr>
+        `;
+      });
+    }
+  });
+</script>
 </body>
 </html>
+
 
 
 
