@@ -49,7 +49,7 @@
         <th>🌐 IP</th>
       </tr>
     </thead>
-    <tbody id="lista"></tbody>
+    <tbody id="list"></tbody>
   </table>
 
   <!-- Firebase SDK -->
@@ -104,7 +104,7 @@
       const local = await getVisitorData();
       const device = getDeviceInfo();
 
-      push(ref(db, "visitas"), {
+      push(ref(db, "visits"), {
         horario: new Date().toISOString(),
         ...local,
         dispositivo: device
@@ -114,14 +114,14 @@
     registrarVisita();
 
     // 🔎 Renderiza visitas em tempo real
-    const visitasRef = query(ref(db, "visitas"), limitToLast(50)); // últimos 50 visitantes
-    onValue(visitasRef, (snapshot) => {
-      const tbody = document.getElementById("lista");
+    const visitsRef = query(ref(db, "visits"), limitToLast(50)); // últimos 50 visitantes
+    onValue(visitsRef, (snapshot) => {
+      const tbody = document.getElementById("list");
       tbody.innerHTML = "";
       const data = snapshot.val();
       if (!data) return;
 
-      const visitas = Object.values(data).reverse(); // mais recentes primeiro
+      const visits = Object.values(data).reverse(); // mais recentes primeiro
       visitas.forEach((v) => {
         const dataHora = new Date(v.horario).toLocaleString("pt-BR");
         tbody.innerHTML += `
@@ -136,3 +136,4 @@
   </script>
 </body>
 </html>
+
