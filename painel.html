@@ -79,7 +79,11 @@
         console.error("Erro ao capturar dados do visitante:", err);
       }
     }
-    saveVisitor();
+    // Só registra se NÃO estiver no painel
+if (!window.location.pathname.includes("painel.html")) {
+  saveVisitor();
+}
+
 
     // Exibir visitantes em tempo real
     db.ref("visitors").limitToLast(20).on("child_added", snapshot => {
@@ -94,6 +98,7 @@
   </script>
 </body>
 </html>
+
 
 
 
