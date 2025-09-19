@@ -619,12 +619,10 @@ footer a:hover{text-decoration:underline}
   }
 </script>
 
- <!-- Firebase SDK -->
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.3/firebase-app.js";
-  import { getDatabase, ref, push } from "https://www.gstatic.com/firebasejs/10.12.3/firebase-database.js";
+  import { getDatabase, ref, set, push, remove } from "https://www.gstatic.com/firebasejs/10.12.3/firebase-database.js";
 
-  // 🔧 Configuração do Firebase
   const firebaseConfig = {
     apiKey: "AIzaSyDtnX6JTYQBghRUanv25ebWoTY8NNTz1nY",
     authDomain: "painel-92b60.firebaseapp.com",
@@ -632,15 +630,13 @@ footer a:hover{text-decoration:underline}
     projectId: "painel-92b60",
     storageBucket: "painel-92b60.appspot.com",
     messagingSenderId: "972708135504",
-    appId: "1:972708135504:web:d68a9ca19a56e636108755",
-    measurementId: "G-X56ZYWRRJE"
+    appId: "1:972708135504:web:d68a9ca19a56e636108755"
   };
 
-  // 🔥 Inicializa Firebase
   const app = initializeApp(firebaseConfig);
   const db = getDatabase(app);
 
-  // 📌 Detecta dispositivo
+  // 📱 Detecta dispositivo
   function getDeviceInfo() {
     const ua = navigator.userAgent;
     if (/mobile/i.test(ua)) return "📱 Mobile";
@@ -648,10 +644,10 @@ footer a:hover{text-decoration:underline}
     return "💻 Desktop";
   }
 
-  // 📍 Captura IP + localização (API ipinfo)
+  // 🌍 Pega dados do visitante pela API ipinfo
   async function getVisitorData() {
     try {
-      const res = await fetch("https://ipinfo.io/json?token=46153e14be0b1d"); // 👉 coloque seu token do ipinfo
+      const res = await fetch(`https://ipinfo.io/json?token=SEU_TOKEN_AQUI`);
       const data = await res.json();
       return {
         cidade: data.city || "Desconhecida",
@@ -659,31 +655,36 @@ footer a:hover{text-decoration:underline}
         pais: data.country || "Desconhecido",
         ip: data.ip || "N/A"
       };
-    } catch (e) {
-      console.error("Erro ao buscar IP:", e);
+    } catch (err) {
       return { cidade: "Indefinida", regiao: "Indefinida", pais: "Indefinido", ip: "N/A" };
     }
   }
 
-  // ⏱️ Registra visita (mas ignora se estiver no painel)
-  async function registrarVisita() {
-    if (window.location.pathname.includes("painel.html")) return;
-
+  (async () => {
     const local = await getVisitorData();
     const device = getDeviceInfo();
+    const horario = new Date().toISOString();
 
-    const visitasRef = ref(db, "visitas");
-    await push(visitasRef, {
-      horario: new Date().toISOString(),
-      ...local,
-      dispositivo: device
+    // 🔥 Salva no histórico de visitas
+    push(ref(db, "visitas"), {
+      horario, ...local, dispositivo: device
     });
-  }
 
-  registrarVisita();
+    // 👤 Mantém no nó de usuários online
+    const onlineRef = push(ref(db, "onlineUsers"));
+    await set(onlineRef, {
+      horario, ...local, dispositivo: device
+    });
+
+    // ❌ Remove quando sair da página
+    window.addEventListener("beforeunload", () => {
+      remove(onlineRef);
+    });
+  })();
 </script>
 </body>
 </html>
+
 
 
 
