@@ -644,7 +644,7 @@ footer a:hover{text-decoration:underline}
     return "💻 Desktop";
   }
 
-  // 🌍 Pega dados do visitante pela API ipinfo
+  // 🌍 Pega dados do visitante
   async function getVisitorData() {
     try {
       const res = await fetch(`https://ipinfo.io/json?token=46153e14be0b1d`);
@@ -665,25 +665,27 @@ footer a:hover{text-decoration:underline}
     const device = getDeviceInfo();
     const horario = new Date().toISOString();
 
-    // 🔥 Salva no histórico de visitas
-    push(ref(db, "visitas"), {
-      horario, ...local, dispositivo: device
-    });
+    // Salva no histórico
+    push(ref(db, "visitas"), { horario, ...local, dispositivo: device });
 
-    // 👤 Mantém no nó de usuários online
+    // Adiciona em onlineUsers
     const onlineRef = push(ref(db, "onlineUsers"));
-    await set(onlineRef, {
-      horario, ...local, dispositivo: device
-    });
+    await set(onlineRef, { horario, ...local, dispositivo: device });
 
-    // ❌ Remove quando sair da página
+    // Remove ao sair
     window.addEventListener("beforeunload", () => {
       remove(onlineRef);
     });
+
+    // 🔥 Remove automaticamente após 3 minutos
+    setTimeout(() => {
+      remove(onlineRef);
+    }, 180000); // 180000 ms = 3 minutos
   })();
 </script>
 </body>
 </html>
+
 
 
 
