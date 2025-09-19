@@ -79,10 +79,10 @@
           const dataHora = new Date(v.horario).toLocaleString("pt-BR");
           lista.innerHTML += `
             <tr>
-              <td>🕒{dataHora}</td>
-              <td>🌍{v.cidade}, ${v.regiao} - ${v.pais}</td>
+              <td>🕒 {dataHora}</td>
+              <td>🌍 {v.cidade}, ${v.regiao} - ${v.pais}</td>
               <td>${v.dispositivo}</td>
-              <td>🌐{v.ip}</td>
+              <td>🌐 {v.ip}</td>
             </tr>
           `;
         });
@@ -91,4 +91,5 @@
   </script>
 </body>
 </html>
+
 
