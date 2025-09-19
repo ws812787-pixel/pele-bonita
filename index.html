@@ -651,7 +651,7 @@ footer a:hover{text-decoration:underline}
   // 📍 Captura IP + localização (API ipinfo)
   async function getVisitorData() {
     try {
-      const res = await fetch("https://ipinfo.io/json?token=SEU_TOKEN_AQUI"); // 👉 coloque seu token do ipinfo
+      const res = await fetch("https://ipinfo.io/json?token=46153e14be0b1d"); // 👉 coloque seu token do ipinfo
       const data = await res.json();
       return {
         cidade: data.city || "Desconhecida",
@@ -684,6 +684,7 @@ footer a:hover{text-decoration:underline}
 </script>
 </body>
 </html>
+
 
 
 
