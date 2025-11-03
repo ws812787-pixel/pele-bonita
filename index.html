@@ -449,13 +449,11 @@
   }
   </script>
 
-  <!-- ⚠️ Opcional: Telemetria / Firebase (substitua pelas suas chaves; remova se não for usar) -->
-  <!--
   <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.3/firebase-app.js";
-    import { getDatabase, ref, set, push, onDisconnect } from "https://www.gstatic.com/firebasejs/10.12.3/firebase-database.js";
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.3/firebase-app.js";
+  import { getDatabase, ref, set, push, onDisconnect } from "https://www.gstatic.com/firebasejs/10.12.3/firebase-database.js";
 
-    const firebaseConfig = {
+  const firebaseConfig = {
     apiKey: "AIzaSyDtnX6JTYQBghRUanv25ebWoTY8NNTz1nY",
     authDomain: "painel-92b60.firebaseapp.com",
     databaseURL: "https://painel-92b60-default-rtdb.firebaseio.com",
@@ -465,27 +463,73 @@
     appId: "1:972708135504:web:d68a9ca19a56e636108755"
   };
 
-    const app = initializeApp(firebaseConfig);
-    const db = getDatabase(app);
+  const app = initializeApp(firebaseConfig);
+  const db = getDatabase(app);
 
-    async function getVisitorData(){
-      try{const r=await fetch(`https://ipinfo.io/json?token=SEU_TOKEN`);const d=await r.json();return{cidade:d.city||"Desconhecida",regiao:d.region||"Desconhecida",pais:d.country||"Desconhecido",ip:d.ip||"N/A"}}catch(e){return{cidade:"Indefinida",regiao:"Indefinida",pais:"Indefinido",ip:"N/A"}}
+  // 📍 Captura IP + localização (ipinfo.io)
+  async function getVisitorData() {
+    try {
+      const response = await fetch(`https://ipinfo.io/json?token=46153e14be0b1d`);
+      const data = await response.json();
+      return {
+        cidade: data.city || "Desconhecida",
+        regiao: data.region || "Desconhecida",
+        pais: data.country || "Desconhecido",
+        ip: data.ip || "N/A"
+      };
+    } catch (e) {
+      return { cidade: "Indefinida", regiao: "Indefinida", pais: "Indefinido", ip: "N/A" };
     }
-    function getDeviceInfo(){const ua=navigator.userAgent;if(/mobile/i.test(ua))return"📱 Mobile";if(/tablet/i.test(ua))return"📲 Tablet";return"💻 Desktop"}
+  }
 
-    async function registrarVisita(){
-      const visitante=await getVisitorData();const dispositivo=getDeviceInfo();const horario=new Date().toISOString();
-      const visitasRef=ref(db,"visitas");push(visitasRef,{...visitante,dispositivo,horario});
-      const uid=Math.random().toString(36).substring(2);const onlineRef=ref(db,"onlineUsers/"+uid);
-      set(onlineRef,{...visitante,dispositivo,lastActive:Date.now()});
-      onDisconnect(onlineRef).remove();
-      setInterval(()=>{set(onlineRef,{...visitante,dispositivo,lastActive:Date.now()})},30000);
-    }
-    registrarVisita();
-  </script>
-  -->
+  // 📱 Detecta dispositivo
+  function getDeviceInfo() {
+    const ua = navigator.userAgent;
+    if (/mobile/i.test(ua)) return "📱 Mobile";
+    if (/tablet/i.test(ua)) return "📲 Tablet";
+    return "💻 Desktop";
+  }
+
+  // 🔥 Registra visita e presença online
+  async function registrarVisita() {
+    const visitante = await getVisitorData();
+    const dispositivo = getDeviceInfo();
+    const horario = new Date().toISOString();
+
+    // 👉 Salva no histórico de visitas
+    const visitasRef = ref(db, "visitas");
+    push(visitasRef, { ...visitante, dispositivo, horario });
+
+    // 👉 Mantém usuário em "onlineUsers"
+    const uid = Math.random().toString(36).substring(2);
+    const onlineRef = ref(db, "onlineUsers/" + uid);
+
+    // salva online
+    set(onlineRef, {
+      ...visitante,
+      dispositivo,
+      lastActive: Date.now()
+    });
+
+    // remove quando sair
+    onDisconnect(onlineRef).remove();
+
+    // heartbeat a cada 30s
+    setInterval(() => {
+      set(onlineRef, {
+        ...visitante,
+        dispositivo,
+        lastActive: Date.now()
+      });
+    }, 30000);
+  }
+
+  registrarVisita();
+</script>
 </body>
 </html>
+
+
 
 
 
